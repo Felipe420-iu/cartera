@@ -4,17 +4,13 @@ import { Client } from "../entities/Client";
 import { Loan } from "../entities/Loan";
 import { Installment } from "../entities/Installment";
 
+// Para Vercel, usar SQLite tanto en desarrollo como en producción
 export const AppDataSource = new DataSource({
-  type: "postgres",
-  host: process.env.PGHOST || process.env.DATABASE_HOST || "localhost",
-  port: parseInt(process.env.PGPORT || process.env.DATABASE_PORT || "5432"),
-  username: process.env.PGUSER || process.env.DATABASE_USER || "postgres",
-  password: process.env.PGPASSWORD || process.env.DATABASE_PASSWORD || "password",
-  database: process.env.PGDATABASE || process.env.DATABASE_NAME || "cartera_db",
-  synchronize: process.env.NODE_ENV === "development",
-  logging: process.env.NODE_ENV === "development",
+  type: "sqlite",
+  database: process.env.NODE_ENV === "production" ? "/tmp/cartera.db" : "cartera_local.sqlite",
+  synchronize: true,
+  logging: process.env.NODE_ENV !== "production",
   entities: [Client, Loan, Installment],
   migrations: [],
   subscribers: [],
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
 });

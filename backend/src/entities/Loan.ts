@@ -35,8 +35,8 @@ export class Loan {
   endDate: Date;
 
   @Column({
-    type: 'enum',
-    enum: LoanStatus,
+    type: 'varchar',
+    length: 20,
     default: LoanStatus.ACTIVE
   })
   status: LoanStatus;

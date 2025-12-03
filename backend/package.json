@@ -17,6 +17,7 @@
     "dotenv": "^16.3.1",
     "typeorm": "^0.3.17",
     "pg": "^8.11.3",
+    "sqlite3": "^5.1.6",
     "reflect-metadata": "^0.1.13",
     "node-cron": "^3.0.3"
   },

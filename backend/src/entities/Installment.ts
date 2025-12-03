@@ -31,8 +31,8 @@ export class Installment {
   paidDate?: Date; // Fecha de pago
 
   @Column({
-    type: 'enum',
-    enum: InstallmentStatus,
+    type: 'varchar',
+    length: 20,
     default: InstallmentStatus.PENDING
   })
   status: InstallmentStatus;
