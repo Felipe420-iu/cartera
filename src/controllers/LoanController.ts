@@ -3,7 +3,7 @@ import { AppDataSource } from '../database/config';
 import { Loan, LoanStatus } from '../entities/Loan';
 import { Installment, InstallmentStatus } from '../entities/Installment';
 import { Client } from '../entities/Client';
-import { LoanService } from '../services/LoanService';
+import { LoanService, InstallmentData } from '../services/LoanService';
 import { Repository } from 'typeorm';
 
 export class LoanController {
@@ -111,7 +111,7 @@ export class LoanController {
       const savedLoan = await this.loanRepository.save(loan);
 
       // Crear las cuotas
-      const installmentEntities = calculation.installmentSchedule.map(installmentData => {
+      const installmentEntities = calculation.installmentSchedule.map((installmentData: InstallmentData) => {
         return this.installmentRepository.create({
           loanId: savedLoan.id,
           installmentNumber: installmentData.installmentNumber,

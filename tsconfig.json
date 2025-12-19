@@ -12,7 +12,7 @@
     "strictPropertyInitialization": false,
 
     /* Bundler mode */
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -27,6 +27,24 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "public"]
+  "include": [
+    "src/server.ts",
+    "src/config/**/*.ts",
+    "src/database/**/*.ts",
+    "src/controllers/**/*.ts",
+    "src/routes/**/*.ts",
+    "src/entities/**/*.ts",
+    "src/jobs/**/*.ts",
+    "src/services/LoanService.ts",
+    "src/types/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.tsx",
+    "src/pages/**",
+    "src/components/**",
+    "src/services/api.ts",
+    "node_modules",
+    "dist",
+    "public"
+  ]
 }
