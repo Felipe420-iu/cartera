@@ -1,8 +1,12 @@
 import "reflect-metadata";
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { AppDataSource } from './database/config';
 import { OverdueJob } from './jobs/OverdueJob';
+
+dotenv.config();
 
 // Rutas
 import clientRoutes from './routes/clientRoutes';
@@ -10,7 +14,8 @@ import loanRoutes from './routes/loanRoutes';
 import summaryRoutes from './routes/summaryRoutes';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 // Middlewares
 app.use(cors());
@@ -21,6 +26,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/clients', clientRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/summary', summaryRoutes);
+
+// Servir aplicación frontend construida
+const publicPath = path.join(__dirname, 'public');
+app.use(express.static(publicPath));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {
@@ -59,10 +71,10 @@ async function startServer() {
     overdueJob.start();
 
     // Iniciar servidor
-    app.listen(PORT, () => {
-      console.log(`🚀 Servidor backend ejecutándose en puerto ${PORT}`);
-      console.log(`📍 API URL: http://localhost:${PORT}/api`);
-      console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+    app.listen(PORT, HOST, () => {
+      console.log(`🚀 Servidor backend ejecutándose en ${HOST}:${PORT}`);
+      console.log(`📍 API URL: http://${HOST}:${PORT}/api`);
+      console.log(`🏥 Health check: http://${HOST}:${PORT}/api/health`);
     });
 
   } catch (error) {
