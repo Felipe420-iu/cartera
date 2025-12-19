@@ -1,18 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
+import App from './App.tsx'
 import './index.css'
 
-console.log('🚀 Iniciando aplicación React...')
-
-const root = ReactDOM.createRoot(document.getElementById('root')!)
-
-console.log('✅ Root element encontrado')
-
-root.render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>
+  </React.StrictMode>,
 )
-
-console.log('✅ App renderizada exitosamente')

@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   HomeIcon,
@@ -9,7 +9,6 @@ import {
   Bars3Icon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
 
 interface LayoutProps {
   children: ReactNode
@@ -46,7 +45,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
               <div className="flex-shrink-0 flex items-center px-4">
-                <h1 className="text-xl font-bold text-gray-900">Cartera Virtual</h1>
+                <h1 className="text-xl font-bold text-gray-900">💰 Cartera</h1>
               </div>
               <nav className="mt-5 px-2 space-y-1">
                 {navigation.map((item) => {
@@ -57,14 +56,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       to={item.href}
                       className={`${
                         isActive
-                          ? 'bg-primary-50 text-primary-700 border-r-4 border-primary-700'
+                          ? 'bg-blue-50 text-blue-700 border-r-4 border-blue-700'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       } group flex items-center px-2 py-2 text-base font-medium rounded-md transition-colors`}
                       onClick={() => setSidebarOpen(false)}
                     >
                       <item.icon
                         className={`${
-                          isActive ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
+                          isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
                         } mr-4 h-6 w-6`}
                       />
                       {item.name}
@@ -94,13 +93,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       to={item.href}
                       className={`${
                         isActive
-                          ? 'bg-primary-50 text-primary-700 border-r-4 border-primary-700'
+                          ? 'bg-blue-50 text-blue-700 border-r-4 border-blue-700'
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       } group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors`}
                     >
                       <item.icon
                         className={`${
-                          isActive ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
+                          isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
                         } mr-3 h-6 w-6`}
                       />
                       {item.name}
@@ -116,10 +115,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         {/* Mobile top navigation */}
-        <div className="md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3">
+        <div className="md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-white border-b">
           <button
             type="button"
-            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             onClick={() => setSidebarOpen(true)}
           >
             <Bars3Icon className="h-6 w-6" />

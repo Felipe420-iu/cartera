@@ -96,7 +96,6 @@ export interface InstallmentData {
 }
 
 export interface Summary {
-  totalAvailable: number;
   totalLent: number;
   totalWithInterest: number;
   totalReceived: number;

@@ -1,21 +1,21 @@
 import { Request, Response } from 'express';
-import { AppDataSource } from '../config/database';
+import { AppDataSource } from '../database/config';
 import { Loan, LoanStatus } from '../entities/Loan';
-import { Client } from '../entities/Client';
 import { Installment, InstallmentStatus } from '../entities/Installment';
+import { Client } from '../entities/Client';
 import { LoanService } from '../services/LoanService';
 import { Repository } from 'typeorm';
 
 export class LoanController {
   private loanRepository: Repository<Loan>;
-  private clientRepository: Repository<Client>;
   private installmentRepository: Repository<Installment>;
+  private clientRepository: Repository<Client>;
   private loanService: LoanService;
 
   constructor() {
     this.loanRepository = AppDataSource.getRepository(Loan);
-    this.clientRepository = AppDataSource.getRepository(Client);
     this.installmentRepository = AppDataSource.getRepository(Installment);
+    this.clientRepository = AppDataSource.getRepository(Client);
     this.loanService = new LoanService();
   }
 
@@ -23,7 +23,8 @@ export class LoanController {
   getAll = async (req: Request, res: Response): Promise<void> => {
     try {
       const loans = await this.loanRepository.find({
-        relations: ['client', 'installmentsList']
+        relations: ['client', 'installmentsList'],
+        order: { createdAt: 'DESC' }
       });
       res.json(loans);
     } catch (error) {
@@ -38,7 +39,8 @@ export class LoanController {
       const { id } = req.params;
       const loan = await this.loanRepository.findOne({
         where: { id: parseInt(id) },
-        relations: ['client', 'installmentsList']
+        relations: ['client', 'installmentsList'],
+        order: { installmentsList: { installmentNumber: 'ASC' } }
       });
 
       if (!loan) {
@@ -59,12 +61,13 @@ export class LoanController {
       const { clientId } = req.params;
       const loans = await this.loanRepository.find({
         where: { clientId: parseInt(clientId) },
-        relations: ['installmentsList']
+        relations: ['client', 'installmentsList'],
+        order: { createdAt: 'DESC' }
       });
 
       res.json(loans);
     } catch (error) {
-      console.error('Error getting client loans:', error);
+      console.error('Error getting loans by client:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   };
@@ -74,48 +77,48 @@ export class LoanController {
     try {
       const { clientId, amount, interestRate, installments, startDate } = req.body;
 
-      // Verificar que el cliente existe
+      // Validar que el cliente existe
       const client = await this.clientRepository.findOne({
         where: { id: clientId }
       });
 
       if (!client) {
-        res.status(404).json({ error: 'Cliente no encontrado' });
+        res.status(400).json({ error: 'Cliente no encontrado' });
         return;
       }
 
-      // Calcular datos del préstamo usando el servicio
-      const loanData = this.loanService.calculateLoan(
-        parseFloat(amount),
-        parseFloat(interestRate),
-        parseInt(installments),
+      // Calcular el préstamo
+      const calculation = this.loanService.calculateLoan(
+        amount,
+        interestRate,
+        installments,
         new Date(startDate)
       );
 
       // Crear el préstamo
       const loan = this.loanRepository.create({
         clientId,
-        amount: parseFloat(amount),
-        interestRate: parseFloat(interestRate),
-        installments: parseInt(installments),
-        installmentAmount: loanData.installmentAmount,
-        totalAmount: loanData.totalAmount,
+        amount,
+        interestRate,
+        installments,
+        installmentAmount: calculation.installmentAmount,
+        totalAmount: calculation.totalAmount,
         startDate: new Date(startDate),
-        endDate: loanData.endDate,
+        endDate: calculation.endDate,
         status: LoanStatus.ACTIVE
       });
 
       const savedLoan = await this.loanRepository.save(loan);
 
       // Crear las cuotas
-      const installmentEntities = loanData.installmentSchedule.map((installmentData, index) => {
+      const installmentEntities = calculation.installmentSchedule.map(installmentData => {
         return this.installmentRepository.create({
           loanId: savedLoan.id,
-          installmentNumber: index + 1,
+          installmentNumber: installmentData.installmentNumber,
           amount: installmentData.amount,
           overdueInterest: 0,
           totalAmount: installmentData.amount,
-          dueDate: installmentData.dueDate,
+          dueDate: new Date(installmentData.dueDate),
           status: InstallmentStatus.PENDING,
           daysOverdue: 0
         });
@@ -123,15 +126,39 @@ export class LoanController {
 
       await this.installmentRepository.save(installmentEntities);
 
-      // Retornar el préstamo completo
-      const completeLoan = await this.loanRepository.findOne({
+      // Retornar el préstamo creado con las relaciones
+      const createdLoan = await this.loanRepository.findOne({
         where: { id: savedLoan.id },
         relations: ['client', 'installmentsList']
       });
 
-      res.status(201).json(completeLoan);
+      res.status(201).json(createdLoan);
     } catch (error) {
       console.error('Error creating loan:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  };
+
+  // Calcular préstamo (sin crear)
+  calculate = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { amount, interestRate, installments, startDate } = req.body;
+
+      if (!amount || !interestRate || !installments || !startDate) {
+        res.status(400).json({ error: 'Faltan parámetros requeridos' });
+        return;
+      }
+
+      const calculation = this.loanService.calculateLoan(
+        amount,
+        interestRate,
+        installments,
+        new Date(startDate)
+      );
+
+      res.json(calculation);
+    } catch (error) {
+      console.error('Error calculating loan:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   };
@@ -157,19 +184,19 @@ export class LoanController {
         return;
       }
 
-      // Actualizar la cuota
+      // Actualizar cuota como pagada
       installment.status = InstallmentStatus.PAID;
       installment.paidDate = paymentDate ? new Date(paymentDate) : new Date();
-      
+
       await this.installmentRepository.save(installment);
 
-      // Verificar si el préstamo está completamente pagado
+      // Verificar si todas las cuotas están pagadas para actualizar el estado del préstamo
       const allInstallments = await this.installmentRepository.find({
         where: { loanId: installment.loanId }
       });
 
       const allPaid = allInstallments.every(inst => inst.status === InstallmentStatus.PAID);
-      
+
       if (allPaid) {
         await this.loanRepository.update(installment.loanId, {
           status: LoanStatus.PAID
@@ -185,25 +212,6 @@ export class LoanController {
       res.json(updatedInstallment);
     } catch (error) {
       console.error('Error paying installment:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
-    }
-  };
-
-  // Calcular préstamo (sin guardar)
-  calculate = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { amount, interestRate, installments, startDate } = req.body;
-
-      const loanData = this.loanService.calculateLoan(
-        parseFloat(amount),
-        parseFloat(interestRate),
-        parseInt(installments),
-        new Date(startDate)
-      );
-
-      res.json(loanData);
-    } catch (error) {
-      console.error('Error calculating loan:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   };

@@ -6,22 +6,22 @@ export class Client {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 100 })
+  @Column('varchar', { length: 100 })
   name: string;
 
-  @Column({ length: 100 })
+  @Column('varchar', { length: 100 })
   lastName: string;
 
-  @Column({ length: 20, unique: true })
+  @Column('varchar', { length: 20, unique: true })
   documentId: string;
 
-  @Column({ length: 15, nullable: true })
+  @Column('varchar', { length: 15, nullable: true })
   phone?: string;
 
-  @Column({ length: 100, nullable: true })
+  @Column('varchar', { length: 100, nullable: true })
   email?: string;
 
-  @Column({ length: 200, nullable: true })
+  @Column('varchar', { length: 200, nullable: true })
   address?: string;
 
   @CreateDateColumn()
@@ -33,7 +33,7 @@ export class Client {
   @OneToMany(() => Loan, loan => loan.client)
   loans: Loan[];
 
-  // Campo virtual para mostrar nombre completo
+  // Campo virtual para obtener el nombre completo
   get fullName(): string {
     return `${this.name} ${this.lastName}`;
   }

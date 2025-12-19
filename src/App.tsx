@@ -1,40 +1,54 @@
-import React from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
+import Layout from './components/Layout'
+import Dashboard from './pages/Dashboard'
+import ClientsPage from './pages/ClientsPage'
+import ClientDetail from './pages/ClientDetail'
+import Loans from './pages/LoansFixed'
+import LoanDetail from './pages/LoanDetail'
+import CalculatorPage from './pages/CalculatorPage'
+import Calendar from './pages/Calendar'
 
 function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-2xl mx-auto text-center">
-        <h1 className="text-6xl font-bold text-gray-800 mb-8">💰</h1>
-        <h2 className="text-4xl font-bold text-gray-800 mb-4">
-          Cartera Virtual
-        </h2>
-        <p className="text-xl text-gray-600 mb-8">
-          Gestión de Préstamos y Pagos
-        </p>
-        <div className="space-y-4">
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-            <strong>✅ React funcionando correctamente</strong>
-          </div>
-          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
-            <strong>🚀 Frontend iniciado en puerto 5173</strong>
-          </div>
-          <div className="bg-purple-100 border border-purple-400 text-purple-700 px-4 py-3 rounded">
-            <strong>⚡ Vite corriendo exitosamente</strong>
-          </div>
-        </div>
-        <div className="mt-8">
-          <p className="text-gray-500">
-            Si ves este mensaje, significa que la aplicación React está funcionando correctamente.
-          </p>
-        </div>
-        <div className="mt-6 text-sm text-gray-400">
-          Hora actual: {new Date().toLocaleTimeString('es-CO')}
-        </div>
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/clients" element={<ClientsPage />} />
+            <Route path="/clients/:id" element={<ClientDetail />} />
+            <Route path="/loans" element={<Loans />} />
+            <Route path="/loans/:id" element={<LoanDetail />} />
+            <Route path="/calculator" element={<CalculatorPage />} />
+            <Route path="/calendar" element={<Calendar />} />
+          </Routes>
+        </Layout>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 3000,
+              style: {
+                background: '#10b981',
+              },
+            },
+            error: {
+              duration: 5000,
+              style: {
+                background: '#ef4444',
+              },
+            },
+          }}
+        />
       </div>
-    </div>
+    </Router>
   )
 }
-
-export default App
 
 export default App

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AppDataSource } from '../config/database';
+import { AppDataSource } from '../database/config';
 import { Client } from '../entities/Client';
 import { Repository } from 'typeorm';
 
@@ -14,7 +14,8 @@ export class ClientController {
   getAll = async (req: Request, res: Response): Promise<void> => {
     try {
       const clients = await this.clientRepository.find({
-        relations: ['loans', 'loans.installmentsList']
+        relations: ['loans'],
+        order: { createdAt: 'DESC' }
       });
       res.json(clients);
     } catch (error) {
@@ -49,7 +50,13 @@ export class ClientController {
     try {
       const { name, lastName, documentId, phone, email, address } = req.body;
 
-      // Validar que el documento no exista
+      // Validar campos requeridos
+      if (!name || !lastName || !documentId) {
+        res.status(400).json({ error: 'Nombre, apellido y documento son requeridos' });
+        return;
+      }
+
+      // Verificar que el documento no exista
       const existingClient = await this.clientRepository.findOne({
         where: { documentId }
       });
@@ -91,7 +98,7 @@ export class ClientController {
         return;
       }
 
-      // Validar documento único si se está cambiando
+      // Verificar que el documento no esté en uso por otro cliente
       if (documentId && documentId !== client.documentId) {
         const existingClient = await this.clientRepository.findOne({
           where: { documentId }
@@ -103,20 +110,15 @@ export class ClientController {
         }
       }
 
-      await this.clientRepository.update(parseInt(id), {
-        name,
-        lastName,
-        documentId,
-        phone,
-        email,
-        address
-      });
+      // Actualizar campos
+      client.name = name || client.name;
+      client.lastName = lastName || client.lastName;
+      client.documentId = documentId || client.documentId;
+      client.phone = phone || client.phone;
+      client.email = email || client.email;
+      client.address = address || client.address;
 
-      const updatedClient = await this.clientRepository.findOne({
-        where: { id: parseInt(id) },
-        relations: ['loans', 'loans.installmentsList']
-      });
-
+      const updatedClient = await this.clientRepository.save(client);
       res.json(updatedClient);
     } catch (error) {
       console.error('Error updating client:', error);
@@ -140,14 +142,13 @@ export class ClientController {
       }
 
       // Verificar que no tenga préstamos activos
-      const activeLoans = client.loans?.filter(loan => loan.status === 'active') || [];
-      if (activeLoans.length > 0) {
-        res.status(400).json({ error: 'No se puede eliminar un cliente con préstamos activos' });
+      if (client.loans && client.loans.length > 0) {
+        res.status(400).json({ error: 'No se puede eliminar un cliente con préstamos registrados' });
         return;
       }
 
       await this.clientRepository.remove(client);
-      res.status(204).send();
+      res.json({ message: 'Cliente eliminado exitosamente' });
     } catch (error) {
       console.error('Error deleting client:', error);
       res.status(500).json({ error: 'Error interno del servidor' });

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { Loan } from "./Loan";
 
 export enum InstallmentStatus {
@@ -37,8 +37,8 @@ export class Installment {
   })
   status: InstallmentStatus;
 
-  @Column('int')
-  daysOverdue: number = 0; // Días de mora
+  @Column('int', { default: 0 })
+  daysOverdue: number; // Días de mora
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,11 +1,7 @@
 import axios from 'axios';
 
-// En producción usar la misma URL, en desarrollo usar localhost:3000
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.PROD ? window.location.origin : 'http://localhost:3000');
-
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
