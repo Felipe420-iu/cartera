@@ -35,7 +35,7 @@
     "src/routes/**/*.ts",
     "src/entities/**/*.ts",
     "src/jobs/**/*.ts",
-    "src/services/LoanService.ts",
+    "src/services/**/*.ts",
     "src/types/**/*.ts"
   ],
   "exclude": [
