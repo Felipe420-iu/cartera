@@ -54,6 +54,7 @@ const Dashboard: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([])
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], [])
   const [capitalBase, setCapitalBase] = useState<number>(0)
+  const [capitalInput, setCapitalInput] = useState('')
   const [editingCapital, setEditingCapital] = useState(false)
 
   useEffect(() => {
@@ -74,15 +75,16 @@ const Dashboard: React.FC = () => {
       }
     }
     const storedCapital = localStorage.getItem('capitalBase')
-    if (storedCapital) {
+    if (storedCapital !== null) {
+      setCapitalInput(storedCapital)
       const parsed = Number(storedCapital)
       if (!Number.isNaN(parsed)) setCapitalBase(parsed)
     }
   }, [])
 
   useEffect(() => {
-    localStorage.setItem('capitalBase', String(capitalBase || 0))
-  }, [capitalBase])
+    localStorage.setItem('capitalBase', capitalInput)
+  }, [capitalInput])
 
   const metrics = useMemo(() => {
     let totalProgramado = 0
@@ -136,8 +138,14 @@ const Dashboard: React.FC = () => {
                   <input
                     type="number"
                     className="input-field w-32"
-                    value={capitalBase}
-                    onChange={(e) => setCapitalBase(Number(e.target.value) || 0)}
+                    value={capitalInput}
+                    placeholder="Ingresa capital"
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setCapitalInput(value)
+                      const numeric = Number(value)
+                      setCapitalBase(value === '' || Number.isNaN(numeric) ? 0 : numeric)
+                    }}
                   />
                   <button
                     className="btn-primary px-3"
